@@ -124,7 +124,6 @@ public class GameEngine {
 			String line = scanner.nextLine();
 			String[] lineArr = line.split(" ");
 			String command = lineArr[0];
-
 			// checks whether player inputs 'help' command
 			if (command.equals("help")) {
 				System.out.println("Type 'commands' to list all available commands");
@@ -148,56 +147,41 @@ public class GameEngine {
 			if(command.equals("player")) {
 				// if player has not been created then go through the creation process
 				if(player.isCreated() == false) {
-
 					System.out.println("What is your character's name?");
 					String playerName = scanner.nextLine();
 					player.setName(playerName);
-
 					System.out.println("Player " + "'" + playerName + "'" + " created.");
 					System.out.println();
 					System.out.println("(Press enter key to return to main menu)");
-
 					player.setIsCreated();
 					player.setMaxHealth();
 					player.setCurrentHealth(player.getMaxHealth());
 					player.setDamage();
-
 				} else {
 					// if player is already created then display the name, damage, health
 					System.out.println(player.getName() + " (Lv. " + player.getLevel() + ")");
-
 					player.setDamage();
 					System.out.println("Damage: " + player.getDamage());
-
-
 					player.setMaxHealth();
 					player.setCurrentHealth(player.getCurrentHealth());
 					System.out.println("Health: " + player.getCurrentHealth() + "/" + player.getMaxHealth());
-
 					System.out.println();
 					System.out.println("(Press enter key to return to main menu)");
-
 				}
 			}
 
 			// checks whether user inputs 'monster' to create a new monster
 			if(command.equals("monster")) {
-
 				System.out.print("Monster name: ");
 				String monsterName = scanner.nextLine();
 				monster.setName(monsterName);
-
 				System.out.print("Monster health: ");
 				int monsterHealth = scanner.nextInt();
-
 				System.out.print("Monster damage: ");
 				int monsterDamage = scanner.nextInt();
-
-
 				System.out.println("Monster " + "'" + monsterName + "'" + " created.");
 				System.out.println();
 				System.out.println("(Press enter key to return to main menu)");
-
 				monster.setMaxHealth(monsterHealth);
 				monster.setCurrentHealth(monsterHealth);
 				monster.setDamage(monsterDamage);
@@ -320,13 +304,12 @@ public class GameEngine {
 				world.printWorld(player, monsters, items);
 
 			} else {
-				playerMovement();
+				playerMovement(movementInput);
 			}
 		} 
 	}
 
-	private void playerMovement(){
-		String movementInput = scanner.nextLine();
+	private void playerMovement(String movementInput){
 		char move = movementInput.charAt(0);
 		int newY;
 		int newX; 
