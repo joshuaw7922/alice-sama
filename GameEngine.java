@@ -44,6 +44,7 @@ public class GameEngine {
 	/*
 	 *  Logic for running the main game loop.
 	 */
+	
 	private void readWorldFile(String fileName) {
 		try {
 			String data = ""; 
@@ -113,6 +114,7 @@ public class GameEngine {
 
 		// Print out the title text.
 		displayTitleText();
+
 		// TODO: Implement your code here.
 		
 		scanner = new Scanner(System.in);
@@ -122,6 +124,7 @@ public class GameEngine {
 			String line = scanner.nextLine();
 			String[] lineArr = line.split(" ");
 			String command = lineArr[0];
+
 			// checks whether player inputs 'help' command
 			if (command.equals("help")) {
 				System.out.println("Type 'commands' to list all available commands");
@@ -129,6 +132,7 @@ public class GameEngine {
 				System.out.println("Create a character, battle monsters, and find treasure!");
 				System.out.println();
 			}
+
 			// checks whether player inputs  'commands' to list all commands
 			if(command.equals("commands")) {
 				System.out.println("help");
@@ -139,6 +143,7 @@ public class GameEngine {
 				System.out.println("save");
 				System.out.println("load");
 			}
+
 			// checks whether player inputs 'player' to create new player
 			if(command.equals("player")) {
 				// if player has not been created then go through the creation process
@@ -174,6 +179,7 @@ public class GameEngine {
 
 				}
 			}
+
 			// checks whether user inputs 'monster' to create a new monster
 			if(command.equals("monster")) {
 
@@ -196,6 +202,7 @@ public class GameEngine {
 				monster.setCurrentHealth(monsterHealth);
 				monster.setDamage(monsterDamage);
 			}
+
 			// checks if user inputs the 'start' command and file name
 			if(command.equals("start") && lineArr.length >= 2) {
 				String fileName = lineArr[1] + ".dat";
@@ -209,17 +216,21 @@ public class GameEngine {
 				// checks if user inputs only 'start' command
 				startCommand();
 			}
+
 			// checks if user inputs "home"
 			if(command.equals("home")) {
 				System.out.println("Returning home...");
 				System.out.println();
 				System.out.println("(Press enter key to return to main menu)");
 			}
+
+
 			// return to main menu when user presses enter
 			if(command.equals("")) {
 				displayTitleText();
 				System.out.print("> ");
 			}
+
 			// checks if user inputs "exit" and ends the game
 			if(command.equals("exit")) {
 				System.out.println("Thank you for playing Rogue!");
@@ -229,11 +240,14 @@ public class GameEngine {
 	}
 	
 	private int startCommand() {
+
 		if(player.isCreated() == false) {
 			// checks if player has been created, if not prompts user to create one first
 			System.out.println("No player found, please create a player with 'player' first.\n");
 			System.out.println("(Press enter key to return to main menu)");
+
 		} 
+		
 		if(player.isCreated() == true && monster.isCreated() == false) {
 			// checks if monster has been created, if not prompts user to create a monster
 			if(isFileExists == false){
@@ -243,12 +257,13 @@ public class GameEngine {
 			} else if(isFileExists == true){
 				world.printWorld(player, monsters, items);
 				System.out.println();
-				playerMovement();
+				startCommandLoop();
 			}
 			else {
 				System.out.println("No monster found, please create a monster with 'monster' first.\n");
 				System.out.println("(Press enter key to return to main menu)");
 			}
+
 		} else {
 			resetGame();	
 			world.printWorld(player, monster); // UPDATED THIS SO DEFAULT WORLD FROM ASSIGNMENT 1 STILL RENDERS WITH MONSTER AND PLAYER POSITIONS
@@ -259,6 +274,7 @@ public class GameEngine {
 	}
 	
 	private void startCommandLoop(){
+		
 		while(true) {
 			System.out.print("> ");
 			String movementInput = scanner.nextLine();
@@ -268,16 +284,18 @@ public class GameEngine {
 				System.out.println();
 				System.out.println("(Press enter key to return to main menu)");
 				break;
+
 			} else if(!movementInput.contains("w") && !movementInput.contains("a") && !movementInput.contains("s") && !movementInput.contains("d")){
 				// checks for empty input by user, reprints the same map with no changes
 				world.printWorld(player, monsters, items);
+
 			} else {
-				// 	CODE FOR MOVE IS NOT READ BY SCANNER WHEN LOADING GAME FROM FILE
 				playerMovement();
 			}
-		}
-	} 
-	
+		} 
+
+	}
+
 	private void playerMovement(){
 		String movementInput = scanner.nextLine();
 		char move = movementInput.charAt(0);
@@ -291,6 +309,7 @@ public class GameEngine {
 			if(isValidMovement(player.getX(), newY)){
 				player.setY(newY);
 			}
+			
 		} else if(move == 'a') {
 			// moves the player 1 position to the left
 			world.updateDot(player.getX(), player.getY());
@@ -313,40 +332,50 @@ public class GameEngine {
 				player.setX(newX);
 			}
 		} 
+
 		// Enter battle loop when player and monster positions are the same
 		if(player.getX() == monster.getX() && player.getY() == monster.getY()) {
 			battleLoop();
 		} else {
 			world.printWorld(player, monsters, items);
 		}
+
 	}
 
 	private void battleLoop(){
 		System.out.println(player.getName() + " encountered a " + monster.getName() + "!");
+
 		System.out.println(player.getName() + " " + player.getCurrentHealth() + "/" + player.getMaxHealth() + "  |  " + monster.getName() + " " + monster.getCurrentHealth() + "/" + monster.getMaxHealth());
 		System.out.println(player.getName() + " attacks " + monster.getName() + " for " + player.getDamage() + " damage.");
 		System.out.println(monster.getName() + " attacks " + player.getName() + " for " + monster.getDamage() + " damage.");
 		System.out.println();
+
 		while(player.getCurrentHealth() > 0 || monster.getCurrentHealth() > 0) {
+
 			player.setCurrentHealth(player.getCurrentHealth() - monster.getDamage()); // decreases player current health by monster's damage
 			monster.setCurrentHealth(monster.getCurrentHealth() - player.getDamage()); // decreases monster current health by player's damage
+
 			System.out.println(player.getName() + " " + player.getCurrentHealth() + "/" + player.getMaxHealth() + "  |  " + monster.getName() + " " + monster.getCurrentHealth() + "/" + monster.getMaxHealth());
 			System.out.println(player.getName() + " attacks " + monster.getName() + " for " + player.getDamage() + " damage.");
 			System.out.println(monster.getName() + " attacks " + player.getName() + " for " + monster.getDamage() + " damage.");
 			System.out.println();
+
 			if(player.getCurrentHealth() < monster.getDamage()) {
 				// monster wins when player's current health reaches 0 or less
 				System.out.println(monster.getName() + " wins!");
 				player.setCurrentHealth(player.getCurrentHealth() - monster.getDamage());
 				break;
 			}
+
 			if(monster.getCurrentHealth() < player.getDamage()) {
 				// player wins when monster's current health reaches 0 or less
 				System.out.println(player.getName() + " wins!");
 				monster.setCurrentHealth(monster.getCurrentHealth() - player.getDamage());
 				break;
 			}
+
 		} // break;
+
 	}
 
 	/** 
@@ -367,6 +396,8 @@ public class GameEngine {
 	 *  Displays the title text.
 	 */
 	private void displayTitleText() {
+
+		
 		String titleText = " ____                        \n" + 
 				"|  _ \\ ___   __ _ _   _  ___ \n" + 
 				"| |_) / _ \\ / _` | | | |/ _ \\\n" + 
@@ -396,10 +427,14 @@ public class GameEngine {
 
 			System.out.println("Player: " + player.getName() + "  | " + "Monster: " + monster.getName());
 		}
+
 		System.out.println();
+
 		System.out.println("Please enter a command to continue." );
 		System.out.println("Type 'help' to learn how to get started.");
 		System.out.println();
+
 	}
+	
 }
 
