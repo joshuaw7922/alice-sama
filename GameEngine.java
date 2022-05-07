@@ -211,7 +211,7 @@ public class GameEngine {
 				if(myFile.exists()) {
 					readWorldFile(fileName);
 				}
-				startCommand();
+				startCommandWithMap();
 			} else if(command.equals("start")) {
 				// checks if user inputs only 'start' command
 				startCommand();
@@ -223,7 +223,6 @@ public class GameEngine {
 				System.out.println();
 				System.out.println("(Press enter key to return to main menu)");
 			}
-
 
 			// return to main menu when user presses enter
 			if(command.equals("")) {
@@ -245,21 +244,52 @@ public class GameEngine {
 			// checks if player has been created, if not prompts user to create one first
 			System.out.println("No player found, please create a player with 'player' first.\n");
 			System.out.println("(Press enter key to return to main menu)");
-
-		} 
-		
-		if(player.isCreated() == true && monster.isCreated() == false) {
+		} else if(player.isCreated() == true && monster.isCreated() == false) {
 			// checks if monster has been created, if not prompts user to create a monster
-			if(isFileExists == false){
-				System.out.println("Map not found.");
-				System.out.println();
+			if(isFileExists == false) {
+				System.out.println("No monster found, please create a monster with 'monster' first.\n");
 				System.out.println("(Press enter key to return to main menu)");
-			} else if(isFileExists == true){
+				
+			} else if(isFileExists == true) {
 				world.printWorld(player, monsters, items);
 				System.out.println();
 				startCommandLoop();
 			}
 			else {
+				System.out.println("Map not found.");
+				System.out.println();
+				System.out.println("(Press enter key to return to main menu)");
+
+			}
+
+		} else {
+			resetGame();	
+			world.printWorld(player, monster); // UPDATED THIS SO DEFAULT WORLD FROM ASSIGNMENT 1 STILL RENDERS WITH MONSTER AND PLAYER POSITIONS
+			// world.printWorld(player, monsters, items); 
+			startCommandLoop();
+		}
+		return 0;
+	}
+
+	private int startCommandWithMap() {
+
+		if(player.isCreated() == false) {
+			// checks if player has been created, if not prompts user to create one first
+			System.out.println("No player found, please create a player with 'player' first.\n");
+			System.out.println("(Press enter key to return to main menu)");
+		} else if(player.isCreated() == true && monster.isCreated() == false) {
+			// checks if monster has been created, if not prompts user to create a monster
+
+			if(isFileExists == false) {
+				System.out.println("Map not found.");
+				System.out.println();
+				System.out.println("(Press enter key to return to main menu)");
+				
+			} else if(isFileExists == true) {
+				world.printWorld(player, monsters, items);
+				System.out.println();
+				startCommandLoop();
+			} else {
 				System.out.println("No monster found, please create a monster with 'monster' first.\n");
 				System.out.println("(Press enter key to return to main menu)");
 			}
@@ -293,7 +323,6 @@ public class GameEngine {
 				playerMovement();
 			}
 		} 
-
 	}
 
 	private void playerMovement(){
@@ -317,6 +346,7 @@ public class GameEngine {
 			if(isValidMovement(newX, player.getY())){
 				player.setX(newX);
 			}
+
 		} else if(move == 's') {
 			// moves the player 1 position down
 			world.updateDot(player.getX(), player.getY());
@@ -324,6 +354,7 @@ public class GameEngine {
 			if(isValidMovement(player.getX(), newY)){
 				player.setY(newY);
 			}
+
 		} else if(move == 'd') {
 			// moves the player 1 position to the right
 			world.updateDot(player.getX(), player.getY()); 
@@ -339,7 +370,6 @@ public class GameEngine {
 		} else {
 			world.printWorld(player, monsters, items);
 		}
-
 	}
 
 	private void battleLoop(){
@@ -373,9 +403,7 @@ public class GameEngine {
 				monster.setCurrentHealth(monster.getCurrentHealth() - player.getDamage());
 				break;
 			}
-
 		} // break;
-
 	}
 
 	/** 
@@ -437,4 +465,3 @@ public class GameEngine {
 	}
 	
 }
-
