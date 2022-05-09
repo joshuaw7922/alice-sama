@@ -244,9 +244,7 @@ public class GameEngine {
 				System.out.println("Map not found.");
 				System.out.println();
 				System.out.println("(Press enter key to return to main menu)");
-
 			}
-
 		} else {
 			resetGame();	
 			world.printWorld(player, monster); // UPDATED THIS SO DEFAULT WORLD FROM ASSIGNMENT 1 STILL RENDERS WITH MONSTER AND PLAYER POSITIONS
@@ -289,7 +287,6 @@ public class GameEngine {
 	}
 	
 	private void startCommandLoop(){
-		
 		while(true) {
 			System.out.print("> ");
 			String movementInput = scanner.nextLine();
@@ -310,55 +307,91 @@ public class GameEngine {
 		} 
 	}
 
+	private void monstersMovement(){
+		int rangeFromPlayer = 2;
+		for (int i = 0; i < monsters.size(); i++){
+			Monster currentMonster = monsters.get(i);
+			int monX = currentMonster.getX();
+			int monY = currentMonster.getY();
+			if (Math.abs(monX - player.getX()) <= rangeFromPlayer && Math.abs(monY - player.getY()) <= rangeFromPlayer){
+				world.updateDot(monX, monY);
+				// if monster right of player, move left
+				if (monX > player.getX() && (checkObstacleCollisionHorizontal(currentMonster, monX - 1) == false)) {
+					// move left
+					monX--;
+					currentMonster.setX(monX);
+				} else if (monX < player.getX() && checkObstacleCollisionHorizontal(currentMonster, monX + 1) == false){
+					// move right
+					monX++;
+					currentMonster.setX(monX);
+				} else if (monY > player.getY() && checkObstacleCollisionVertical(currentMonster, monY - 1) == false) {
+					// move up
+					monY--;
+					currentMonster.setY(monY);
+				} else if (monY < player.getY() && checkObstacleCollisionVertical(currentMonster, monY + 1) == false){
+					// move down
+					monY++;
+					currentMonster.setY(monY);
+				}
+			}
+		}
+	}
+
 	private void playerMovement(String movementInput, ArrayList<Item> items) {
 		char move = movementInput.charAt(0);
 		int newY;
 		int newX;
 		world.updateDot(player.getX(), player.getY());
+		if(isFileExists == false){
+			checkMonsterCollision();
+		}
+		monstersMovement();
 		if(move == 'w') {
 			// moves the player 1 position up
 			newY = player.getY() - 1;
-			checkObstacleCollisionVertical(newY);
+			checkObstacleCollisionVertical(player, newY);
 		} else if(move == 'a') {
 			// moves the player 1 position to the left
 			newX = player.getX() - 1;
-			checkObstacleCollisionHorizontal(newX);
+			checkObstacleCollisionHorizontal(player, newX);
 		} else if(move == 's') {
 			// moves the player 1 position down if there is non-traversable terrain 1 cell down from player's current position
 			newY = player.getY() + 1;
-			checkObstacleCollisionVertical(newY);
+			checkObstacleCollisionVertical(player, newY);
 		} else if(move == 'd') {
 			// moves the player 1 position to the right
 			newX = player.getX() + 1;
-			checkObstacleCollisionHorizontal(newX);
-		}
-		if(isFileExists == false){
-			checkMonsterCollision();
+			checkObstacleCollisionHorizontal(player, newX);
 		}
 		checkItemCollision();
 		checkMonstersCollision();
 		world.printWorld(player, monsters, items);
 	}
 
-	private void checkObstacleCollisionVertical(int newY){
-		if(isValidMovement(player.getX(), newY)){
-			player.setY(newY);
-
-			if(world.obstacleExists(player, player.getX(), newY) == true) {
+	private boolean checkObstacleCollisionVertical(Unit unit, int newY){
+		if(isValidMovement(unit.getX(), newY)){
+			if(world.obstacleExists(unit.getX(), newY) == true) {
 				// No change to player Y position
-				player.setY(player.getY());
+				unit.setY(unit.getY());
+				return true;
+			} else {
+				unit.setY(newY);
 			}
 		}
+		return false;
 	}
 
-	private void checkObstacleCollisionHorizontal(int newX){
-		if(isValidMovement(newX, player.getY())){
-			player.setX(newX);
-			if(world.obstacleExists(player, newX, player.getY()) == true) {
+	private boolean checkObstacleCollisionHorizontal(Unit unit, int newX){
+		if(isValidMovement(newX, unit.getY())){
+			if(world.obstacleExists(newX, unit.getY()) == true) {
 				// No change to player X position if there is non-traversable terrain 1 cell to the right of player's current position
-				player.setX(player.getX());
+				unit.setX(unit.getX());
+				return true;
+			} else {
+				unit.setX(newX);
 			}
 		}
+		return false;
 	}
 
 	private void checkItemCollision(){

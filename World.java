@@ -84,7 +84,7 @@ public class World {
 		gameWorld[y][x] = '.';
  	}
 
-	public boolean obstacleExists(Player player, int x, int y){
+	public boolean obstacleExists(int x, int y){
 		// Checks if the cell contains non-traversable terrain, else returns false
 		if(gameWorld[y][x] == '#' || gameWorld[y][x] == '~'){
 			return true;
