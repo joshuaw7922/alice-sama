@@ -33,7 +33,7 @@ public class Item extends Entity {
 	public void levelUp(Player player) {
         // increases players current level by 1
 		player.setLevel(player.getLevel() + 1);
-		System.out.println("World complete! (You leveled up!");
+		System.out.println("World complete! (You leveled up!)");
 	}
 
 	public char getSymbol() {

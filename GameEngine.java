@@ -313,95 +313,80 @@ public class GameEngine {
 	private void playerMovement(String movementInput, ArrayList<Item> items) {
 		char move = movementInput.charAt(0);
 		int newY;
-		int newX; 
-
+		int newX;
+		world.updateDot(player.getX(), player.getY());
 		if(move == 'w') {
 			// moves the player 1 position up
-			world.updateDot(player.getX(), player.getY());
 			newY = player.getY() - 1;
-
-			if(world.obstacleExists(player, player.getX(), newY) == true){
-				// No change to player Y position if there is non-traversable terrain 1 cell above player's current position
-				player.setY(player.getY()); 
-			} else if(isValidMovement(player.getX(), newY)){
-				player.setY(newY);
-			}
-
-			for(int i = 0; i < items.size(); i++) {
-				if(items.get(i).getX() == player.getX() && items.get(i).getY() == player.getY()){
-					items.get(i).readSymbol(player); 
-					items.remove(i);
-				}
-			}
-			
+			checkObstacleCollisionVertical(newY);
 		} else if(move == 'a') {
 			// moves the player 1 position to the left
-			world.updateDot(player.getX(), player.getY());
 			newX = player.getX() - 1;
-
-			if(world.obstacleExists(player, newX, player.getY()) == true){
-				// No change to player X position if there is non-traversable terrain 1 cell to the left of player's current position
-				player.setX(player.getX()); 
-			} else if(isValidMovement(newX, player.getY())){
-				player.setX(newX);
-			}
-			for(int i = 0; i < items.size(); i++) {
-				if(items.get(i).getX() == player.getX() && items.get(i).getY() == player.getY()){
-					items.get(i).readSymbol(player); 
-					items.remove(i);
-				}
-			}
-
+			checkObstacleCollisionHorizontal(newX);
 		} else if(move == 's') {
 			// moves the player 1 position down if there is non-traversable terrain 1 cell down from player's current position
-			world.updateDot(player.getX(), player.getY());
 			newY = player.getY() + 1;
-
-			if(world.obstacleExists(player, player.getX(), newY) == true){
-				// No change to player Y position 
-				player.setY(player.getY());  
-			} else if(isValidMovement(player.getX(), newY)){
-				player.setY(newY);
-			}
-			for(int i = 0; i < items.size(); i++) {
-				if(items.get(i).getX() == player.getX() && items.get(i).getY() == player.getY()){
-					items.get(i).readSymbol(player); 
-					items.remove(i);
-				}
-			}
-
+			checkObstacleCollisionVertical(newY);
 		} else if(move == 'd') {
 			// moves the player 1 position to the right
-
-			world.updateDot(player.getX(), player.getY());
 			newX = player.getX() + 1;
+			checkObstacleCollisionHorizontal(newX);
+		}
+		if(isFileExists == false){
+			checkMonsterCollision();
+		}
+		checkItemCollision();
+		checkMonstersCollision();
+		world.printWorld(player, monsters, items);
+	}
 
-			if(world.obstacleExists(player, newX, player.getY()) == true){
-				// No change to player X position if there is non-traversable terrain 1 cell to the right of player's current position
-				player.setX(player.getX()); 
-			} else if(isValidMovement(newX, player.getY())){
-				player.setX(newX);	
-			} 
+	private void checkObstacleCollisionVertical(int newY){
+		if(isValidMovement(player.getX(), newY)){
+			player.setY(newY);
 
-			for(int i = 0; i < items.size(); i++) {
-				if(items.get(i).getX() == player.getX() && items.get(i).getY() == player.getY()){
-					items.get(i).readSymbol(player); 
-					items.remove(i);
-				}
+			if(world.obstacleExists(player, player.getX(), newY) == true) {
+				// No change to player Y position
+				player.setY(player.getY());
 			}
-			
-		} 
-
-		// Enter battle loop when player and monster positions are the same
-		if(player.getX() == monster.getX() && player.getY() == monster.getY()) {
-			battleLoop();
-
-		} else {
-			world.printWorld(player, monsters, items);
 		}
 	}
 
-	private void battleLoop(){
+	private void checkObstacleCollisionHorizontal(int newX){
+		if(isValidMovement(newX, player.getY())){
+			player.setX(newX);
+			if(world.obstacleExists(player, newX, player.getY()) == true) {
+				// No change to player X position if there is non-traversable terrain 1 cell to the right of player's current position
+				player.setX(player.getX());
+			}
+		}
+	}
+
+	private void checkItemCollision(){
+		for(int i = 0; i < items.size(); i++) {
+			if (items.get(i).getX() == player.getX() && items.get(i).getY() == player.getY()) {
+				items.get(i).readSymbol(player);
+				items.remove(i);
+			}
+		}
+	}
+
+	private void checkMonsterCollision(){
+		// Enter battle loop when player and monster positions are the same
+		if(player.getX() == monster.getX() && player.getY() == monster.getY()) {
+			battleLoop(monster);
+		}
+	}
+
+	private void checkMonstersCollision(){
+		for(int i = 0; i < monsters.size(); i++) {
+			if (monsters.get(i).getX() == player.getX() && monsters.get(i).getY() == player.getY()) {
+				battleLoop(monsters.get(i));
+				monsters.remove(i);
+			}
+		}
+	}
+
+	private void battleLoop(Monster monster){
 		System.out.println(player.getName() + " encountered a " + monster.getName() + "!");
 
 		System.out.println(player.getName() + " " + player.getCurrentHealth() + "/" + player.getMaxHealth() + "  |  " + monster.getName() + " " + monster.getCurrentHealth() + "/" + monster.getMaxHealth());
@@ -432,7 +417,7 @@ public class GameEngine {
 				monster.setCurrentHealth(monster.getCurrentHealth() - player.getDamage());
 				break;
 			}
-		} // break;
+		}
 	}
 
 	/** 

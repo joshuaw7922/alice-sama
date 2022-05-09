@@ -1,18 +1,6 @@
 
 // TODO: Copy code from your Assignment 1 as starter code.
 public class Monster extends Unit {
-	
-	/** 
-	* Default constructor initialises monster attributes to the below values when monster is created
-	*/ 
-	public Monster() { 
-		this.name = "[None]";
-		this.maxHealth = maxHealth;
-		this.damage = damage;
-		this.X = 4;
-		this.Y = 2;
-	}
-
 	public String getName() {
 		return name;
 	}
@@ -31,13 +19,22 @@ public class Monster extends Unit {
 	public void setDamage(int damage) {
 		this.damage = damage;
 	}
-
 	public int getCurrentHealth() {
 		return currentHealth;
 	}
-
 	public void setCurrentHealth(int health) {
 		this.currentHealth = health;
+	}
+
+	/** 
+	* Default constructor initialises monster attributes to the below values when monster is created
+	*/ 
+	public Monster() { 
+		this.name = "[None]";
+		this.maxHealth = maxHealth;
+		this.damage = damage;
+		this.X = 4;
+		this.Y = 2;
 	}
 
 	/** 
