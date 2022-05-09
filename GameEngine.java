@@ -24,6 +24,7 @@ public class GameEngine {
 		items = new ArrayList<Item>();
 		isFileExists = false;
 		worldFile = new FileHandler();
+
 	}
 
 	public static void main(String[] args) {
@@ -304,12 +305,12 @@ public class GameEngine {
 				world.printWorld(player, monsters, items);
 
 			} else {
-				playerMovement(movementInput);
+				playerMovement(movementInput, items);
 			}
 		} 
 	}
 
-	private void playerMovement(String movementInput){
+	private void playerMovement(String movementInput, ArrayList<Item> items) {
 		char move = movementInput.charAt(0);
 		int newY;
 		int newX; 
@@ -318,38 +319,83 @@ public class GameEngine {
 			// moves the player 1 position up
 			world.updateDot(player.getX(), player.getY());
 			newY = player.getY() - 1;
-			if(isValidMovement(player.getX(), newY)){
+
+			if(world.obstacleExists(player, player.getX(), newY) == true){
+				// No change to player Y position if there is non-traversable terrain 1 cell above player's current position
+				player.setY(player.getY()); 
+			} else if(isValidMovement(player.getX(), newY)){
 				player.setY(newY);
+			}
+
+			for(int i = 0; i < items.size(); i++) {
+				if(items.get(i).getX() == player.getX() && items.get(i).getY() == player.getY()){
+					items.get(i).readSymbol(player); 
+					items.remove(i);
+				}
 			}
 			
 		} else if(move == 'a') {
 			// moves the player 1 position to the left
 			world.updateDot(player.getX(), player.getY());
 			newX = player.getX() - 1;
-			if(isValidMovement(newX, player.getY())){
+
+			if(world.obstacleExists(player, newX, player.getY()) == true){
+				// No change to player X position if there is non-traversable terrain 1 cell to the left of player's current position
+				player.setX(player.getX()); 
+			} else if(isValidMovement(newX, player.getY())){
 				player.setX(newX);
+			}
+			for(int i = 0; i < items.size(); i++) {
+				if(items.get(i).getX() == player.getX() && items.get(i).getY() == player.getY()){
+					items.get(i).readSymbol(player); 
+					items.remove(i);
+				}
 			}
 
 		} else if(move == 's') {
-			// moves the player 1 position down
+			// moves the player 1 position down if there is non-traversable terrain 1 cell down from player's current position
 			world.updateDot(player.getX(), player.getY());
 			newY = player.getY() + 1;
-			if(isValidMovement(player.getX(), newY)){
+
+			if(world.obstacleExists(player, player.getX(), newY) == true){
+				// No change to player Y position 
+				player.setY(player.getY());  
+			} else if(isValidMovement(player.getX(), newY)){
 				player.setY(newY);
+			}
+			for(int i = 0; i < items.size(); i++) {
+				if(items.get(i).getX() == player.getX() && items.get(i).getY() == player.getY()){
+					items.get(i).readSymbol(player); 
+					items.remove(i);
+				}
 			}
 
 		} else if(move == 'd') {
 			// moves the player 1 position to the right
-			world.updateDot(player.getX(), player.getY()); 
+
+			world.updateDot(player.getX(), player.getY());
 			newX = player.getX() + 1;
-			if(isValidMovement(newX, player.getY())){
-				player.setX(newX);
+
+			if(world.obstacleExists(player, newX, player.getY()) == true){
+				// No change to player X position if there is non-traversable terrain 1 cell to the right of player's current position
+				player.setX(player.getX()); 
+			} else if(isValidMovement(newX, player.getY())){
+				player.setX(newX);	
+			} 
+
+			for(int i = 0; i < items.size(); i++) {
+				if(items.get(i).getX() == player.getX() && items.get(i).getY() == player.getY()){
+					items.get(i).readSymbol(player); 
+					items.remove(i);
+				}
 			}
+			
 		} 
 
 		// Enter battle loop when player and monster positions are the same
 		if(player.getX() == monster.getX() && player.getY() == monster.getY()) {
 			battleLoop();
+
 		} else {
 			world.printWorld(player, monsters, items);
 		}

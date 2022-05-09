@@ -81,9 +81,17 @@ public class World {
 	* @param y relates to the row position in the array
 	*/
  	public void updateDot(int x, int y) {
- 		gameWorld[y][x] = '.';
+		gameWorld[y][x] = '.';
  	}
- 		
+
+	public boolean obstacleExists(Player player, int x, int y){
+		// Checks if the cell contains non-traversable terrain, else returns false
+		if(gameWorld[y][x] == '#' || gameWorld[y][x] == '~'){
+			return true;
+		}
+		return false;
+	}
+
  	public int getMaxHeight() {
  		return maxHeight;
  	}
@@ -109,4 +117,3 @@ public class World {
  	}
 
 }
-
