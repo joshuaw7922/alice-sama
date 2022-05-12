@@ -81,6 +81,7 @@ public class GameEngine {
 					m.setY(Integer.valueOf(currentLine[2]));
 					m.setName(currentLine[3]);
 					m.setMaxHealth(Integer.valueOf(currentLine[4]));
+					m.setCurrentHealth(Integer.valueOf(currentLine[4]));
 					m.setDamage(Integer.valueOf(currentLine[5]));
 					monsters.add(m);
 				} else if(currentLine[0].equals("item")) {
@@ -248,9 +249,9 @@ public class GameEngine {
 		} else {
 			resetGame();	
 			world.printWorld(player, monster); // UPDATED THIS SO DEFAULT WORLD FROM ASSIGNMENT 1 STILL RENDERS WITH MONSTER AND PLAYER POSITIONS
-			// world.printWorld(player, monsters, items); 
 			startCommandLoop();
 		}
+		
 		return 0;
 	}
 
@@ -282,11 +283,13 @@ public class GameEngine {
 			world.printWorld(player, monster); // UPDATED THIS SO DEFAULT WORLD FROM ASSIGNMENT 1 STILL RENDERS WITH MONSTER AND PLAYER POSITIONS
 			// world.printWorld(player, monsters, items); 
 			startCommandLoop();
+
 		}
 		return 0;
 	}
 	
 	private void startCommandLoop(){
+
 		while(true) {
 			System.out.print("> ");
 			String movementInput = scanner.nextLine();
@@ -297,11 +300,16 @@ public class GameEngine {
 				System.out.println("(Press enter key to return to main menu)");
 				break;
 
-			} else if(!movementInput.contains("w") && !movementInput.contains("a") && !movementInput.contains("s") && !movementInput.contains("d")){
+			} else if(!movementInput.contains("w") && !movementInput.contains("a") && !movementInput.contains("s") && !movementInput.contains("d") && !movementInput.contains("")){
 				// checks for empty input by user, reprints the same map with no changes
 				world.printWorld(player, monsters, items);
+			} 
 
-			} else {
+			if(movementInput.equals("exit")){
+				System.out.println("Thank you for playing Rogue!");			
+			}
+			
+			else {
 				playerMovement(movementInput, items);
 			}
 		} 
@@ -338,7 +346,12 @@ public class GameEngine {
 	}
 
 	private void playerMovement(String movementInput, ArrayList<Item> items) {
-		char move = movementInput.charAt(0);
+		char move;
+        if(movementInput.isBlank()){
+            move = ' ';
+        } else {
+            move = movementInput.charAt(0);
+        }
 		int newY;
 		int newX;
 		world.updateDot(player.getX(), player.getY());
@@ -362,10 +375,12 @@ public class GameEngine {
 			// moves the player 1 position to the right
 			newX = player.getX() + 1;
 			checkObstacleCollisionHorizontal(player, newX);
-		}
+		} 
 		checkItemCollision();
 		checkMonstersCollision();
 		world.printWorld(player, monsters, items);
+		System.out.println();
+		
 	}
 
 	private boolean checkObstacleCollisionVertical(Unit unit, int newY){
@@ -421,22 +436,58 @@ public class GameEngine {
 
 	private void battleLoop(Monster monster){
 		System.out.println(player.getName() + " encountered a " + monster.getName() + "!");
-
-		System.out.println(player.getName() + " " + player.getCurrentHealth() + "/" + player.getMaxHealth() + "  |  " + monster.getName() + " " + monster.getCurrentHealth() + "/" + monster.getMaxHealth());
+		System.out.println();
+		System.out.println(player.getName() + " " + player.getCurrentHealth() + "/" + player.getMaxHealth() + " | " + monster.getName() + " " + monster.getCurrentHealth() + "/" + monster.getMaxHealth());
 		System.out.println(player.getName() + " attacks " + monster.getName() + " for " + player.getDamage() + " damage.");
 		System.out.println(monster.getName() + " attacks " + player.getName() + " for " + monster.getDamage() + " damage.");
 		System.out.println();
 
 		while(player.getCurrentHealth() > 0 || monster.getCurrentHealth() > 0) {
+			player.setCurrentHealth(player.getCurrentHealth() - monster.getDamage()); // decreases player current health by monster's damage
+			monster.setCurrentHealth(monster.getCurrentHealth() - player.getDamage()); // decreases monster current health by player's damage
+			System.out.println(player.getName() + " " + player.getCurrentHealth() + "/" + player.getMaxHealth() + " | " + monster.getName() + " " + monster.getCurrentHealth() + "/" + monster.getMaxHealth());
+
+			// keep printing message for player attack monster until monster current health - player damage <=0
+			// then print the player wins message directly, do not print monster attacks player
+			if(player.getCurrentHealth() >= 0){
+				System.out.println(player.getName() + " attacks " + monster.getName() + " for " + player.getDamage() + " damage.");
+				
+				if(monster.getCurrentHealth() < player.getDamage()) {
+				// player wins when monster's current health reaches 0 or less
+					System.out.println(player.getName() + " wins!");
+					System.out.println();
+					monster.setCurrentHealth(monster.getCurrentHealth() - player.getDamage());
+					break;
+				}
+			}
+
+			if(monster.getCurrentHealth() - player.getDamage() >= 0){
+				System.out.println(monster.getName() + " attacks " + player.getName() + " for " + monster.getDamage() + " damage.");
+				
+				if(player.getCurrentHealth() < monster.getDamage()) {
+				// monster wins when player's current health reaches 0 or less
+					System.out.println(monster.getName() + " wins!");
+					System.out.println();
+					player.setCurrentHealth(player.getCurrentHealth() - monster.getDamage());
+					System.out.println("(Press enter key to return to main menu)");
+					displayTitleText();
+					break;
+				}
+			}
+			System.out.println();
+		}
+
+		/*
+		while(player.getCurrentHealth() > 0 || monster.getCurrentHealth() > 0) {
 
 			player.setCurrentHealth(player.getCurrentHealth() - monster.getDamage()); // decreases player current health by monster's damage
 			monster.setCurrentHealth(monster.getCurrentHealth() - player.getDamage()); // decreases monster current health by player's damage
 
-			System.out.println(player.getName() + " " + player.getCurrentHealth() + "/" + player.getMaxHealth() + "  |  " + monster.getName() + " " + monster.getCurrentHealth() + "/" + monster.getMaxHealth());
+			System.out.println(player.getName() + " " + player.getCurrentHealth() + "/" + player.getMaxHealth() + " | " + monster.getName() + " " + monster.getCurrentHealth() + "/" + monster.getMaxHealth());
 			System.out.println(player.getName() + " attacks " + monster.getName() + " for " + player.getDamage() + " damage.");
 			System.out.println(monster.getName() + " attacks " + player.getName() + " for " + monster.getDamage() + " damage.");
 			System.out.println();
-
+			
 			if(player.getCurrentHealth() < monster.getDamage()) {
 				// monster wins when player's current health reaches 0 or less
 				System.out.println(monster.getName() + " wins!");
@@ -450,7 +501,9 @@ public class GameEngine {
 				monster.setCurrentHealth(monster.getCurrentHealth() - player.getDamage());
 				break;
 			}
+			
 		}
+		*/
 	}
 
 	/** 
