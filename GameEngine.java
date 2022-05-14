@@ -242,7 +242,10 @@ public class GameEngine {
 				try {
 					if(playerFile.checkPlayerFileExists(playerFileName) == true){
 						// System.out.println(playerFile.loadPlayerFile(playerFileName));
-						playerFile.loadPlayerFile(playerFileName);
+						String playerData = playerFile.loadPlayerFile(playerFileName);
+						String[] splitPlayerData = playerData.split(" ");
+						player.setName(splitPlayerData[0]);
+						player.setLevel(Integer.parseInt(splitPlayerData[1]));
 						System.out.println("Player data loaded.");
 					}
 				} catch (FileNotFoundException e){
