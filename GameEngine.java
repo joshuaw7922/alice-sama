@@ -1,6 +1,7 @@
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.io.File;
+import java.io.FileNotFoundException;
 
 public class GameEngine {
 	private Player player;
@@ -11,12 +12,14 @@ public class GameEngine {
 	private Scanner scanner;
 	private boolean isFileExists;
 	private FileHandler worldFile;
+	private FileHandler playerFile;
+	private boolean continueGame;
+	private String playerFileName;
 
 	/** 
 	* Creates new player, monster and world objects to run the game loop
 	*/ 
 	public GameEngine() {
-		// 
 		player = new Player();
 		monster = new Monster();
 		world = new World();
@@ -24,7 +27,9 @@ public class GameEngine {
 		items = new ArrayList<Item>();
 		isFileExists = false;
 		worldFile = new FileHandler();
-
+		playerFile = new FileHandler();
+		continueGame = true;
+		playerFileName = "player.dat";
 	}
 
 	public static void main(String[] args) {
@@ -39,7 +44,6 @@ public class GameEngine {
 		// Runs the main game loop.
 		// gameEngine.readWorldFile();
 		gameEngine.runGameLoop();
-
 	}
 
 	/*
@@ -122,12 +126,18 @@ public class GameEngine {
 		scanner = new Scanner(System.in);
 		System.out.print("> ");
 
-		while (true) {
+		while (continueGame == true) {
+
 			String line = scanner.nextLine();
 			String[] lineArr = line.split(" ");
-			String command = lineArr[0];
+			String command = "";
+			
+			if(lineArr.length >= 1) {
+				command = lineArr[0];
+			}
+			
 			// checks whether player inputs 'help' command
-			if (command.equals("help")) {
+			if(command.equals("help")) {
 				System.out.println("Type 'commands' to list all available commands");
 				System.out.println("Type 'start' to start a new game");
 				System.out.println("Create a character, battle monsters, and find treasure!");
@@ -216,6 +226,38 @@ public class GameEngine {
 				System.out.print("> ");
 			}
 
+			if(command.equals("save")){
+
+				if(player.isCreated() == true){
+					String data = player.getName() + " " + Integer.valueOf(player.getLevel());
+					playerFile.createFile(playerFileName);
+					playerFile.writeFile(playerFileName, data);
+					System.out.println("Player data saved.");
+				} else {
+					System.out.println("No player data to save.");
+				}
+			}
+
+			if(command.equals("load")){
+				try {
+					if(playerFile.checkPlayerFileExists(playerFileName) == true){
+						// System.out.println(playerFile.loadPlayerFile(playerFileName));
+						playerFile.loadPlayerFile(playerFileName);
+						System.out.println("Player data loaded.");
+					}
+				} catch (FileNotFoundException e){
+					System.out.println("No player data found.");
+				}
+				/*
+				if(playerFile.checkPlayerFileExists(playerFileName) == true){
+					System.out.println(playerFile.loadPlayerFile(playerFileName));
+					System.out.println("Player data loaded.");
+				} else {
+					System.out.println("No player data found.");
+				}
+				*/
+			}
+
 			// checks if user inputs "exit" and ends the game
 			if(command.equals("exit")) {
 				System.out.println("Thank you for playing Rogue!");
@@ -240,18 +282,17 @@ public class GameEngine {
 				world.printWorld(player, monsters, items);
 				System.out.println();
 				startCommandLoop();
-			}
-			else {
+			} else {
 				System.out.println("Map not found.");
 				System.out.println();
 				System.out.println("(Press enter key to return to main menu)");
 			}
 		} else {
-			resetGame();	
+			resetGame();
+			checkMonsterCollision();
 			world.printWorld(player, monster); // UPDATED THIS SO DEFAULT WORLD FROM ASSIGNMENT 1 STILL RENDERS WITH MONSTER AND PLAYER POSITIONS
 			startCommandLoop();
 		}
-		
 		return 0;
 	}
 
@@ -273,6 +314,7 @@ public class GameEngine {
 				world.printWorld(player, monsters, items);
 				System.out.println();
 				startCommandLoop();
+				
 			} else {
 				System.out.println("No monster found, please create a monster with 'monster' first.\n");
 				System.out.println("(Press enter key to return to main menu)");
@@ -283,7 +325,6 @@ public class GameEngine {
 			world.printWorld(player, monster); // UPDATED THIS SO DEFAULT WORLD FROM ASSIGNMENT 1 STILL RENDERS WITH MONSTER AND PLAYER POSITIONS
 			// world.printWorld(player, monsters, items); 
 			startCommandLoop();
-
 		}
 		return 0;
 	}
@@ -291,7 +332,10 @@ public class GameEngine {
 	private void startCommandLoop(){
 
 		while(true) {
-			System.out.print("> ");
+
+			if(player.getCurrentHealth() > 0) {
+				System.out.print("> ");	
+			}
 			String movementInput = scanner.nextLine();
 
 			if(movementInput.equals("home")) {
@@ -305,12 +349,18 @@ public class GameEngine {
 				world.printWorld(player, monsters, items);
 			} 
 
-			if(movementInput.equals("exit")){
-				System.out.println("Thank you for playing Rogue!");			
-			}
-			
-			else {
+			if(movementInput.equals("exit")) {
+				System.out.println("> Thank you for playing Rogue!");	
+				continueGame = false;
+				break;		
+			} else {
 				playerMovement(movementInput, items);
+
+				/*
+				if(checkItemCollision() == false) {
+					break;
+				}
+				*/
 			}
 		} 
 	}
@@ -355,10 +405,12 @@ public class GameEngine {
 		int newY;
 		int newX;
 		world.updateDot(player.getX(), player.getY());
+
 		if(isFileExists == false){
 			checkMonsterCollision();
 		}
 		monstersMovement();
+
 		if(move == 'w') {
 			// moves the player 1 position up
 			newY = player.getY() - 1;
@@ -375,16 +427,19 @@ public class GameEngine {
 			// moves the player 1 position to the right
 			newX = player.getX() + 1;
 			checkObstacleCollisionHorizontal(player, newX);
-		} 
-		checkItemCollision();
+		}
+		// checkItemCollision();
 		checkMonstersCollision();
-		world.printWorld(player, monsters, items);
-		System.out.println();
-		
+
+		if(player.getCurrentHealth() > 0 && checkItemCollision() == true){
+			// checkItemCollision();
+			world.printWorld(player, monsters, items);
+			System.out.println();		
+		}
 	}
 
 	private boolean checkObstacleCollisionVertical(Unit unit, int newY){
-		if(isValidMovement(unit.getX(), newY)){
+		if(isValidMovement(unit.getX(), newY)) {
 			if(world.obstacleExists(unit.getX(), newY) == true) {
 				// No change to player Y position
 				unit.setY(unit.getY());
@@ -409,13 +464,20 @@ public class GameEngine {
 		return false;
 	}
 
-	private void checkItemCollision(){
+	private boolean checkItemCollision(){
 		for(int i = 0; i < items.size(); i++) {
 			if (items.get(i).getX() == player.getX() && items.get(i).getY() == player.getY()) {
 				items.get(i).readSymbol(player);
+
+				if(items.get(i).getSymbol() == '@'){
+					System.out.println();
+					System.out.println("(Press enter to return to main menu)");
+					return false;
+				}
 				items.remove(i);
-			}
+			} 		
 		}
+		return true;
 	}
 
 	private void checkMonsterCollision(){
@@ -555,13 +617,9 @@ public class GameEngine {
 
 			System.out.println("Player: " + player.getName() + "  | " + "Monster: " + monster.getName());
 		}
-
 		System.out.println();
-
 		System.out.println("Please enter a command to continue." );
 		System.out.println("Type 'help' to learn how to get started.");
 		System.out.println();
-
 	}
-	
 }

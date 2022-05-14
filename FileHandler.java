@@ -66,6 +66,29 @@ public class FileHandler {
             return true;
         }
     }
- 
-}
 
+    public boolean checkPlayerFileExists(String fileName) throws FileNotFoundException {
+        File file = new File(fileName);
+        if(file.exists() == false){
+            throw new FileNotFoundException("No player data found.");
+        }
+        else {
+            return true;
+        }
+    }
+
+    public String loadPlayerFile(String fileName){
+        String data = "";
+        try {
+            FileReader myFile = new FileReader(fileName);
+            Scanner myReader = new Scanner(myFile);
+            while (myReader.hasNextLine()) {
+                data += myReader.nextLine() + "\n";
+            }
+            myFile.close();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return data;
+    }
+}
